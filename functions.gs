@@ -1,3 +1,7 @@
+//ADJDS311 {\"red\": %d, \"green\": %d, \"blue\": %d, \"clear\": %d}
+//TCS34725 {\"red\": %d, \"green\": %d, \"blue\": %d, \"clear\": %d}
+//TMP006 "{\"Object Temperature\": %.5f, \"Sensor Temperature\": %.5f}"
+
 
 function TMP36( keyName, reading ) {
   var maxScale    = 4095;
@@ -26,9 +30,9 @@ function BMP085( keyName, data ) {
     Logger.log( "BMP085 parsed data " );
     Logger.log( p );
     
-    p["Altitude"   ] = p["altitude"   ]; delete p["altitude"   ];
-    p["Temperature"] = p["temperature"]; delete p["temperature"];
-    p["Pressure"   ] = p["pressure"   ]; delete p["pressure"   ];
+    p["Altitude"   ] = p["a"]; delete p["a"];
+    p["Temperature"] = p["t"]; delete p["t"];
+    p["Pressure"   ] = p["p"]; delete p["p"];
     
     
     if (typeof sea_level_pressure !== 'undefined') {
@@ -49,26 +53,24 @@ function BMP085( keyName, data ) {
         
         var weatherDiff = p["Pressure"] - ePressure;
         
-        p["Pressure difference"] = weatherDiff;
+        p["Pressure difference"] = Math.abs( weatherDiff );
         //https://www.sparkfun.com/tutorials/253
         
       //} else {
         //var dAltitude = nAltitude - altitude;
         //Logger.log( "Delta altitude " + dAltitude );
         //p["Delta altitude"] = dAltitude;
+        
+        for ( var k in p ) {
+          Logger.log( "BMP085 data k " + k );
+          res[0][ res[0].length ] =   k;
+          res[1][ res[1].length ] = p[k];
+        }
       } else {
         Logger.log( "NO Correct altitude " + correct_altitude );  
-      }
+     s }
     } else {
       Logger.log( "NO Sea Level pressure " + sea_level_pressure );  
-    }
-
-    
-    for ( var k in p ) {
-      Logger.log( "BMP085 data k " + k );
-      res[0][ res[0].length ] = k;
-      res[1][ res[1].length ] = p[k];
-      
     }
   } catch(e)
   {
@@ -79,10 +81,11 @@ function BMP085( keyName, data ) {
 }
 
 
+//fields
 function serializeResults( results ) {
-  var rt = [];
-  var rv = [];
-  for ( var f = 0; f < results[0].length; ++f ) {
+  var re = {};
+  
+  for ( var f = 0; f < results.length; ++f ) {
     var t = results[0][f];
     var v = results[1][f];
     Logger.log("f " + f + " t "  + t + " v "  + v );
@@ -95,15 +98,35 @@ function serializeResults( results ) {
 
           Logger.log("f " + f + " g "  + g + " tt " + tt + " vv " + vv );
           
-          rt[ rt.length ] = tt;
-          rv[ rv.length ] = vv;
+          re[ tt ] = vv;
+          //rt[ rt.length ] = tt;
+          //rv[ rv.length ] = vv;
         }
         
       } else {
-        rt[ rt.length ] = t;
-        rv[ rv.length ] = v;
+        re[ t ] = v;
+        //rt[ rt.length ] = t;
+        //rv[ rv.length ] = v;
       }
     }
   }
+
+  var rt = [];
+  var rv = [];
+
+  for ( var f = 0; f < fields.length; ++f ) {
+    var ft = fields[f];
+    
+    if ( ft in re ) {
+      rt[f] = ft;
+      rv[f] = re[ft];
+    } else {
+      rt[f] = ft;
+      rv[f] = "";
+    }
+    
+    Logger.log("Ff " + f + " ft "  + ft + " v "  + rv[t] );
+  }
+
   return [ rt, rv ];
 }
