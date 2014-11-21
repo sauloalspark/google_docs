@@ -11,6 +11,9 @@ var maxDaysToKeep       = 1;
 var sea_level_pressure;
 var correct_altitude;
 
+//var fields = ["Temparature TMP36", "Altitude", "Temperature", "Pressure", "Pressure difference"];
+var fields = ["Temparature TMP36", "Temperature", "Pressure", "Pressure difference"];
+
 //TODO: TRANSFER TO FORMULAS SHEET
 var URLS = [
   { "url": API_url + device_1_name +"/analogread", "options": { "payload": { "params": "A2" }, "method": "post", "headers": { "Authorization": "Bearer " + device_1_bearer } }, "key": "return_value", "formula": TMP36  },
